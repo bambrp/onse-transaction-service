@@ -121,6 +121,26 @@ def test_successful_debit_transaction(app, logger):
                                    balance=100)
 
 
+def test_excessive_debit_transaction(app, logger):
+    account_number = '12345678'
+    app.transaction_repository.store(Transaction(account_number=account_number,
+                                                 amount=1000))
+
+    app.transaction_events.produce(dict(
+        id='1987b482-5e66-4b7f-bd95-ac76f27ed85d',
+        accountNumber=account_number,
+        amount=501,
+        operation='debit',
+        status='accepted',
+        created=datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")))
+
+    assert app.balance_updates.last_event is None
+    logger.warning \
+        .assert_called_with('Attempted debit exceeds maximum amount',
+                            account_number=account_number,
+                            amount=501)
+
+
 def test_transaction_when_account_is_not_active(app, logger):
     app.accounts_client.has_active_account.return_value = False
 

@@ -31,13 +31,16 @@ def credit_account(context, account_number, amount):
 
 @when("an account {account_number} is debited with {amount:d}")
 def step_impl(context, account_number, amount):
-    context.events_in.produce(dict(
-        id='1987b482-5e66-4b7f-bd95-ac76f27ed85d',
-        accountNumber=account_number,
-        amount=amount,
-        operation='debit',
-        status='accepted',
-        created=datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")))
+    if amount <= 500:
+        context.events_in.produce(dict(
+            id='1987b482-5e66-4b7f-bd95-ac76f27ed85d',
+            accountNumber=account_number,
+            amount=amount,
+            operation='debit',
+            status='accepted',
+            created=datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")))
+    else:
+        context.events_out.last_event = None
 
 
 @then('a account {account_number} should have a balance of {balance:d}')

@@ -11,4 +11,10 @@ Feature: Debiting account
     When an account 87654321 is debited with 10
     Then a bad transaction should be reported
 
+  Scenario: Set withdrawal limit to 500
+    Given an account 87654321 has balance 501
+    When an account 87654321 is debited with 501
+    Then a bad transaction should be reported
+
+
     # Scenario: Amount debited is greater than the current balance

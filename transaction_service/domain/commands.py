@@ -32,6 +32,9 @@ class DebitAccount:
     def execute(self, account_number, amount):
         try:
             account = self._load_account(account_number)
+            if amount > 500:
+                raise DebitMaximumExceeded()
+
             account.debit(amount)
             self.logger.info('Successful debit transaction',
                              account_number=account_number,
@@ -42,6 +45,15 @@ class DebitAccount:
                 'Attempted transaction against inactive account',
                 account_number=account_number,
                 amount=amount)
+        except DebitMaximumExceeded:
+            self.logger.warning(
+                'Attempted debit exceeds maximum amount',
+                account_number=account_number,
+                amount=amount)
 
     def _load_account(self, account_number):
         return self.account_repository.fetch_by_account_number(account_number)
+
+
+class DebitMaximumExceeded(RuntimeError):
+    pass
